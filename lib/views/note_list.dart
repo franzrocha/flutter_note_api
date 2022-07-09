@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_notes_api/models/notes_for_listing.dart';
+import 'package:flutter/material.dart'; 
 import 'package:get_it/get_it.dart';
 import '../models/api_response.dart';
+import '../models/notes_for_listing.dart';
 import '../services/notes_service.dart';
 import 'note_delete.dart';
 import 'note_modify.dart';
@@ -50,7 +50,11 @@ class _NoteListState extends State<NoteList> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const NoteModify()));
+              .push(MaterialPageRoute(builder: (_) => const NoteModify()))
+              
+              .then((_){
+                _fetchNotes();
+              });
         },
         child: const Icon(Icons.add),
       ),
