@@ -9,7 +9,7 @@ class NotesService {
   static const api = 'https://tq-notes-api-jkrgrdggbq-el.a.run.app';
 
   static const headers = {
-    'apiKey': '2c736799-6d86-433f-a863-8e3556deb53b',
+    'apiKey': 'a713effe-9e2c-4d37-8179-98ae7ee98812',
     'Content-Type': 'application/json'
     };
 
@@ -61,6 +61,15 @@ class NotesService {
             APIResponse<bool>(error: true, errorMessage: 'An error occurred.'));
   }
 
+   Future<APIResponse<bool>> deleteNote(String noteID) {
+    return http.delete(Uri.parse('$api/notes/$noteID'), headers: headers).then((data) {
+      if(data.statusCode == 204) {
+        return APIResponse<bool>(data: true);
+      }
+      return APIResponse<bool>(error: true, errorMessage: 'An error occurred');
+    }).catchError((_) =>
+            APIResponse<bool>(error: true, errorMessage: 'An error occurred.'));
+  }
 
 
 

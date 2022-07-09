@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart';
 import '../models/api_response.dart';
 import '../models/notes_for_listing.dart';
 import '../services/notes_service.dart';
@@ -21,7 +22,7 @@ class _NoteListState extends State<NoteList> {
 
   String formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-  } 
+  }
 
   @override
   void initState() {
@@ -51,15 +52,13 @@ class _NoteListState extends State<NoteList> {
         onPressed: () {
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (_) => const NoteModify()))
-              
-              .then((_){
-                _fetchNotes();
-              });
+              .then((_) {
+            _fetchNotes();
+          });
         },
         child: const Icon(Icons.add),
       ),
-      body: Builder(
-        builder: (_) {
+      body: Builder(builder: (_) {
         if (_isLoading) {
           return const CircularProgressIndicator();
         }
@@ -79,6 +78,35 @@ class _NoteListState extends State<NoteList> {
               confirmDismiss: (direction) async {
                 final result = await showDialog(
                     context: context, builder: (_) => const NoteDelete());
+
+                if (result) {
+                  final deleteResult = await service
+                      .deleteNote(_apiResponse!.data![index].noteID!);
+
+                  var message;
+                  if (deleteResult != null && deleteResult.data == true) {
+                    message = 'The note was deleted successfully';
+                  } else {
+                    message = deleteResult.errorMessage ?? 'An error occured';
+                  }
+
+                  showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                            title: const Text('Done'),
+                            content: Text(message),
+                            actions: <Widget>[
+                              ElevatedButton(
+                                  child: const Text('Ok'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ],
+                          ));
+
+                  return deleteResult.data ?? false;
+                }
+
                 print(result);
                 return result;
               },
@@ -99,13 +127,15 @@ class _NoteListState extends State<NoteList> {
                   style: const TextStyle(color: Colors.black),
                 ),
                 subtitle: Text(
-                    'Last edited on ${formatDateTime(_apiResponse!.data![index].latestEditDateTime   ?? _apiResponse!.data![index].createDateTime!)}'),
+                    'Last edited on ${formatDateTime(_apiResponse!.data![index].latestEditDateTime ?? _apiResponse!.data![index].createDateTime!)}'),
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => NoteModify(
-                          noteID: _apiResponse!.data![index].noteID!))).then((data){
-                            _fetchNotes();
-                          });
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (_) => NoteModify(
+                              noteID: _apiResponse!.data![index].noteID!)))
+                      .then((data) {
+                    _fetchNotes();
+                  });
                 },
               ),
             );
